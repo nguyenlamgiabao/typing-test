@@ -50,8 +50,30 @@ h1::after{content:"VHS  SP  0:00:00";margin-left:auto;font-size:.7rem;letter-spa
 .bar button:active{border-style:inset}
 .bar button.on{background:#b9c9c0;border-style:inset}
 .hint{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}
-@media (prefers-reduced-motion:reduce){.app{animation:none}}`};
-const BUILT=[['dark','Tối'],['light','Sáng'],['pixel','Pixel'],['rebel','Nổi loạn'],['classic','Cổ điển']];
+@media (prefers-reduced-motion:reduce){.app{animation:none}}`,
+game:`:root{--bg:#0c0a14;--card:#171327;--fg:#f1e9ff;--dim:#5b5578;--ok:#5dffb0;--bad:#ff4d6d;--badbg:#4a1020;--acc:#ffc63d;--bd:#6f4cff}
+body{font-family:"Courier New",monospace;font-weight:700;background:radial-gradient(ellipse at 50% -10%,#3a1f7a88,#0000 60%),radial-gradient(ellipse at 50% 120%,#7a1f4a66,#0000 55%),repeating-linear-gradient(0deg,#ffffff06 0 2px,#0000 2px 4px),#0c0a14}
+h1{display:flex;align-items:center;gap:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--acc);text-shadow:0 0 12px #ffc63d88,3px 3px 0 #000}
+h1::after{content:"LV.1  \\2665\\2665\\2665";margin-left:auto;font-size:.7rem;color:var(--ok);letter-spacing:.12em}
+.box,.stat,.res,.sg,.sg-atk{border:3px solid var(--bd);border-radius:6px;box-shadow:0 0 0 3px #0c0a14,0 0 0 5px #ffc63d55,0 0 24px #6f4cff55,inset 0 0 20px #6f4cff22}
+.stat{position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;background:linear-gradient(90deg,var(--bad),var(--acc),var(--ok));animation:hpb 3s ease-in-out infinite alternate}
+@keyframes hpb{from{width:35%}to{width:100%}}
+.stat b{color:var(--acc);text-shadow:0 0 10px #ffc63d66}
+#words{letter-spacing:.05em}
+.c{display:inline-block}
+.c.ok{text-shadow:0 0 8px var(--ok);animation:gp .18s ease-out}
+@keyframes gp{from{transform:translateY(-3px);color:#fff}}
+.c.bad{background:var(--bad);color:#fff;text-decoration:none;animation:gs .18s 2}
+@keyframes gs{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+.c.cur{box-shadow:none;background:var(--acc);color:#000;animation:gb .7s steps(1) infinite}
+@keyframes gb{50%{background:#ffc63d55}}
+.bar button,.bar select{border:2px solid var(--bd);border-radius:4px;background:#241c40;color:var(--fg);font-family:inherit;box-shadow:0 4px 0 #000;transition:transform .08s}
+.bar button:hover{transform:translateY(2px);box-shadow:0 2px 0 #000}
+.bar button.on{background:var(--acc);color:#000;border-color:#fff}
+.res .big{text-shadow:0 0 18px var(--acc);animation:gp2 1.2s ease-out}
+@keyframes gp2{from{transform:scale(1.6);opacity:0}}`};
+const BUILT=[['dark','Tối'],['light','Sáng'],['pixel','Pixel'],['rebel','Nổi loạn'],['classic','Cổ điển'],['game','Game']];
 let MINE=[];
 try{const v=JSON.parse(localStorage.getItem('tt_fx')||'[]');if(Array.isArray(v))MINE=v.filter(x=>x&&typeof x.name==='string'&&typeof x.css==='string').slice(0,20)}catch(e){}
 function fxSave(){try{localStorage.setItem('tt_fx',JSON.stringify(MINE))}catch(e){}}
