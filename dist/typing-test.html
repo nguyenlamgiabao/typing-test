@@ -28,6 +28,7 @@ h1{font-size:1.2rem;margin:0 0 16px;font-weight:600}
 .c.ok{color:var(--ok)}
 .c.bad{color:var(--bad);background:var(--badbg);text-decoration:underline}
 .c.cur{box-shadow:-2px 0 0 var(--acc);animation:blink 1s steps(1) infinite}
+.c.miss{color:var(--bad);opacity:.65;text-decoration:underline dotted}
 .c.pend{color:var(--fg);border-bottom:2px dotted var(--acc)}
 @keyframes blink{50%{box-shadow:-2px 0 0 transparent}}
 #hid{position:fixed;opacity:0;pointer-events:none;left:-999px;top:0}
@@ -184,8 +185,9 @@ const WORDS={vi:[...new Set(`tôi bạn anh chị em ông bà cô chú cháu con
 
 const $=id=>document.getElementById(id);
 const hid=$('hid'),words=$('words'),box=$('box');
-let mode='type',endless=false,curW=null,lang='vi',target=[],spans=[],wid=[],W=[],started=false,ended=false,t0=0,timer=null,dur=30,
-composing=false,compStart=0,prevLen=0,prevSt=[],prevTW=new Set(),keys=0,errN=0,lastGrow=0,ebt={},errs={},kinds={dau:0,chu:0},cum=[],okNow=0,lastV=[];
+const EXTRA=8;   // tối đa số ký tự gõ lố thêm cho mỗi từ
+let mode='type',endless=false,lang='vi',W=[],started=false,ended=false,t0=0,timer=null,dur=30,
+composing=false,prevLen=0,prevSt=[],prevTW=new Set(),prevMW=new Set(),keys=0,errN=0,lastGrow=0,ebt={},errs={},kinds={dau:0,chu:0},cum=[],okNow=0,lastV=[],rendered=0;
 /* ---- phân tích ký tự tiếng Việt: chữ gốc + mũ/móc + dấu thanh ---- */
 const TONES={'\u0300':1,'\u0301':2,'\u0309':3,'\u0303':4,'\u0323':5},MODS={'\u0302':'^','\u0306':'(','\u031B':'+'},DC={};
 function dec(ch){
@@ -213,65 +215,95 @@ function genWords(n){
  while(out.length<n){const b=shuffle(WORDS[lang]);if(out.length&&b[0]===out[out.length-1])b.push(b.shift());out=out.concat(b)}
  return out.slice(0,n);
 }
-function addText(text){
- [...text.toLowerCase().normalize('NFC')].forEach(ch=>{
-  if(!curW){curW=document.createElement('span');curW.className='w';words.appendChild(curW);W.push({s:target.length,e:target.length})}
-  const sp=document.createElement('span');sp.className='c';sp.textContent=ch;curW.appendChild(sp);
-  spans.push(sp);target.push(ch);wid.push(W.length-1);
-  if(ch===' ')curW=null;else W[W.length-1].e=target.length;
+function addWords(list){
+ list.forEach(raw=>{
+  const chars=[...raw.toLowerCase().normalize('NFC')];
+  const el=document.createElement('span');el.className='w';
+  const spans=chars.map(ch=>{const sp=document.createElement('span');sp.className='c';sp.textContent=ch;el.appendChild(sp);return sp});
+  const sp=document.createElement('span');sp.className='c sp';sp.textContent=' ';el.appendChild(sp);
+  words.appendChild(el);
+  W.push({chars,len:chars.length,el,spans,sp,ex:[]});
  });
 }
 function build(){
- target=[];spans=[];wid=[];W=[];curW=null;words.innerHTML='';words.style.transform='';
- addText(genWords(endless?100:300).join(' '));
- render([],[]);
+ W=[];rendered=0;words.innerHTML='';words.style.transform='';
+ addWords(genWords(endless?100:300));
+ render([],{st:[],miss:[]});
 }
 function reset(){
- clearInterval(timer);started=ended=false;prevLen=keys=errN=okNow=0;prevSt=[];prevTW=new Set();ebt={};errs={};kinds={dau:0,chu:0};cum=[];lastV=[];composing=false;
+ clearInterval(timer);started=ended=false;prevLen=keys=errN=okNow=0;prevSt=[];prevTW=new Set();prevMW=new Set();ebt={};errs={};kinds={dau:0,chu:0};cum=[];lastV=[];composing=false;
  hid.lang=lang;dur=+$('dur').value;endless=dur===0;$('t').textContent=endless?0:dur;$('tl').textContent=endless?'từ':'giây';
  $('wpm').textContent=0;$('cpm').textContent=0;$('acc').textContent='100%';
  $('res').classList.remove('show');hid.value='';hid.disabled=false;build();if(mode==='type')hid.focus();
 }
-/* ---- chấm điểm ---- */
-function judge(ch,fin){
- const L=ch.length,st=[];
- for(let i=0;i<L;i++)st[i]=cmp(ch[i],target[i]);
- if(composing)for(let i=compStart;i<L;i++)if(st[i]<2)st[i]=1;   // đang ghép chữ: chưa phán xét
- const done=new Set();
- for(let i=0;i<L;i++){
-  if(st[i]!==1||done.has(wid[i]))continue;
-  const w=W[wid[i]];done.add(wid[i]);
-  if(fin?L<w.e:(L<=w.e||(composing&&w.e>=compStart)))continue;   // chỉ phán khi từ đã xong (gõ dấu cách, hoặc hết giờ khi đã gõ đủ chữ); từ gõ dở lúc hết giờ không bị phạt
-  const e=Math.min(w.e,L),same=canon(ch.slice(w.s,e).join(''))===canon(target.slice(w.s,e).join(''));
-  for(let j=w.s;j<e;j++)if(st[j]===1)st[j]=same?2:0;
+/* ---- chấm điểm: mỗi từ được chấm riêng, từ gõ lố / thiếu chỉ làm sai chính từ đó ---- */
+function parse(v){const tw=[[]];for(const ch of v){if(ch===' ')tw.push([]);else tw[tw.length-1].push(ch)}return tw}
+// chuẩn hoá ô nhập: bỏ dấu cách thừa, giới hạn độ dài gõ lố, không cho vượt quá từ cuối
+function norm(v){
+ const out=[];let wi=0,cnt=0;
+ for(const ch of v){
+  if(ch===' '){if(!cnt||wi>=W.length-1)continue;out.push(ch);wi++;cnt=0}
+  else{if(cnt>=W[wi].len+EXTRA)continue;out.push(ch);cnt++}
  }
- return st;
+ return out;
 }
-function account(st,ch,now){
- // Lỗi chỉ được ghi khi một ký tự đã CHẮC CHẮN sai (st=0). Chữ chưa có dấu mà từ chưa xong thì st=1, không bị tính.
- // Sai dấu thanh trong cùng 1 từ (kể cả đặt nhầm nguyên âm) chỉ tính 1 lỗi.
- let n=0;const tw=new Set();
- for(let i=0;i<st.length;i++){
-  if(st[i]!==0)continue;
-  const a=dec(ch[i]),b=dec(target[i]),tone=lang==='vi'&&a.b===b.b&&a.m===b.m,k=tone?'t'+wid[i]:i;
-  if(tone){if(tw.has(wid[i]))continue;tw.add(wid[i]);if(prevTW.has(wid[i]))continue}
-  else if(prevSt[i]===0)continue;
-  if(now-(ebt[k]||-1e9)<=80)continue;
-  ebt[k]=now;errN++;n++;
-  if(lang==='vi'&&a.b===b.b)kinds.dau++;else kinds.chu++;
-  errs[target[i]]=(errs[target[i]]||0)+1;
- }
- prevTW=tw;prevSt=st.slice();okNow=st.filter(x=>x>0).length;return n;
-}
-function render(ch,st){
- const L=ch.length;
- spans.forEach((s,i)=>{
-  let c='c';
-  if(i<L)c+=st[i]===2?' ok':st[i]===1?' pend':' bad';
-  if(i===L)c+=' cur';
-  s.className=c;
+function judge(tw,fin){
+ const st=[],miss=[];
+ tw.forEach((t,wi)=>{
+  const w=W[wi],cur=wi===tw.length-1,s=[];
+  for(let i=0;i<t.length;i++)s[i]=i<w.len?cmp(t[i],w.chars[i]):0;      // ký tự gõ lố luôn là sai
+  if(composing&&cur)for(let i=0;i<Math.min(t.length,w.len);i++)if(s[i]<2)s[i]=1;   // đang ghép chữ: chưa phán xét
+  // chỉ phán các chữ "chưa chắc" khi từ đã xong (đã gõ dấu cách, hoặc hết giờ khi đã gõ đủ chữ)
+  if(s.includes(1)&&(!cur||(fin&&t.length>=w.len))){
+   const e=Math.min(w.len,t.length),same=canon(t.slice(0,e).join(''))===canon(w.chars.slice(0,e).join(''));
+   for(let j=0;j<e;j++)if(s[j]===1)s[j]=same?2:0;
+  }
+  st[wi]=s;miss[wi]=!cur&&t.length<w.len?w.len-t.length:0;   // bấm cách khi chưa gõ hết từ
  });
- const cur=spans[Math.min(L,spans.length-1)];
+ return{st,miss};
+}
+function account(r,tw,now){
+ // Lỗi chỉ được ghi khi ký tự đã CHẮC CHẮN sai (st=0). Chữ chưa có dấu mà từ chưa xong thì st=1, không bị tính.
+ // Sai dấu thanh trong cùng 1 từ chỉ tính 1 lỗi. Mỗi ký tự gõ lố tính 1 lỗi nhưng chỉ của từ đó.
+ let n=0;const ntw=new Set(),nmw=new Set();let ok=0;
+ tw.forEach((t,wi)=>{
+  const w=W[wi],s=r.st[wi],ps=prevSt[wi]||[];
+  for(let i=0;i<s.length;i++){
+   if(s[i]>0){if(i<w.len)ok++;continue}
+   if(i>=w.len){
+    const k=wi+':'+i;
+    if(ps[i]===0||now-(ebt[k]||-1e9)<=80)continue;
+    ebt[k]=now;errN++;n++;kinds.chu++;continue;
+   }
+   const a=dec(t[i]),b=dec(w.chars[i]),tone=lang==='vi'&&a.b===b.b&&a.m===b.m,k=tone?'t'+wi:wi+':'+i;
+   if(tone){if(ntw.has(wi))continue;ntw.add(wi);if(prevTW.has(wi))continue}
+   else if(ps[i]===0)continue;
+   if(now-(ebt[k]||-1e9)<=80)continue;
+   ebt[k]=now;errN++;n++;
+   if(lang==='vi'&&a.b===b.b)kinds.dau++;else kinds.chu++;
+   errs[w.chars[i]]=(errs[w.chars[i]]||0)+1;
+  }
+  if(r.miss[wi]){
+   nmw.add(wi);
+   if(!prevMW.has(wi)){errN++;n++;kinds.chu++;const c=w.chars[t.length];errs[c]=(errs[c]||0)+1}
+  }
+  if(wi<tw.length-1&&t.length===w.len&&s.every(x=>x>0))ok++;   // dấu cách sau từ đúng
+ });
+ prevTW=ntw;prevMW=nmw;prevSt=r.st.map(a=>a.slice());okNow=ok;return n;
+}
+function render(tw,r){
+ const cw=Math.max(0,tw.length-1),upto=Math.min(W.length,Math.max(rendered,tw.length));
+ for(let wi=0;wi<upto;wi++){
+  const w=W[wi],t=tw[wi]||[],s=(r.st[wi])||[],fin=wi<tw.length-1,exN=Math.max(0,t.length-w.len);
+  while(w.ex.length<exN){const x=document.createElement('span');x.className='c ex';w.el.insertBefore(x,w.sp);w.ex.push(x)}
+  while(w.ex.length>exN)w.ex.pop().remove();
+  const cls=i=>i<t.length?(s[i]===2?'c ok':s[i]===1?'c pend':'c bad'):(fin?'c miss':'c');
+  w.spans.forEach((x,i)=>{x.className=cls(i)});w.sp.className='c sp';
+  w.ex.forEach((x,k)=>{x.textContent=t[w.len+k];x.className='c ex bad'});
+ }
+ rendered=Math.max(0,tw.length);
+ const w=W[Math.min(cw,W.length-1)],kids=w.el.children,cur=kids[Math.min((tw[cw]||[]).length,kids.length-1)];
+ cur.classList.add('cur');
  const lh=parseFloat(getComputedStyle(words).lineHeight)||35;
  const row=Math.max(0,Math.round(cur.offsetTop/lh)-1);
  words.style.transform='translateY('+(-row*lh)+'px)';
@@ -330,7 +362,7 @@ function finish(){
  if(ended)return;
  const ms=elapsed();ended=true;clearInterval(timer);hid.disabled=true;sfx('end');
  composing=false;
- const st=judge(lastV,true);account(st,lastV,performance.now()+1e4);render(lastV,st);
+ const tw=parse(lastV),r0=judge(tw,true);account(r0,tw,performance.now()+1e4);render(tw,r0);
  while(cum.length<Math.floor(Math.min(ms,dur*1000||ms)/1000))cum.push(okNow);
  const r=stats();
  $('rw').textContent=r.wpm+' WPM';
@@ -338,24 +370,24 @@ function finish(){
  report(r);$('res').classList.add('show');
 }
 /* ---- nhập liệu (Unikey, Telex/VNI, IME macOS, bàn phím điện thoại) ---- */
-const wStart=i=>{const k=Math.min(i,target.length-1);return W[wid[k]].s};
-hid.addEventListener('compositionstart',()=>{composing=true;compStart=wStart([...hid.value.normalize('NFC')].length)});
+hid.addEventListener('compositionstart',()=>{composing=true});
 hid.addEventListener('compositionend',()=>{composing=false;onInput(true)});
 function onInput(fc){
  if(ended)return;
  let v=[...hid.value.normalize('NFC')];
- if(v.length>target.length){v=v.slice(0,target.length);if(!composing)hid.value=v.join('')}
+ if(!composing){const n=norm(v);if(n.length!==v.length||n.some((c,i)=>c!==v[i])){v=n;hid.value=v.join('')}}
  const L=v.length,now=performance.now();
  if(!started&&L>0){started=true;t0=now;timer=setInterval(tick,250)}
- const st=judge(v,false),ne=account(st,v,now);
+ const tw=parse(v),r=judge(tw,false),ne=account(r,tw,now);
  if(L>prevLen){
   if(fc)keys+=L-prevLen;else if(now-lastGrow>30)keys++;   // bộ gõ xoá+chèn lại trong 1 lần bấm chỉ tính 1 phím
   lastGrow=now;sfx(ne?'err':'key');
  }
  prevLen=L;lastV=v;
- if(endless&&L>target.length-80)addText(' '+genWords(100).join(' '));
- render(v,st);stats();
- if(!endless&&L>=target.length&&!composing&&st[L-1]!==1)finish();
+ if(endless&&tw.length>W.length-30)addWords(genWords(60));
+ render(tw,r);stats();
+ const last=tw.length-1;
+ if(!endless&&last===W.length-1&&tw[last].length>=W[last].len&&!composing)finish();
 }
 hid.addEventListener('input',e=>{if(e.isComposing)composing=true;onInput(false)});
 hid.addEventListener('keydown',e=>{

@@ -21,6 +21,7 @@ h1{font-size:1.2rem;margin:0 0 16px;font-weight:600}
 .c.ok{color:var(--ok)}
 .c.bad{color:var(--bad);background:var(--badbg);text-decoration:underline}
 .c.cur{box-shadow:-2px 0 0 var(--acc);animation:blink 1s steps(1) infinite}
+.c.miss{color:var(--bad);opacity:.65;text-decoration:underline dotted}
 .c.pend{color:var(--fg);border-bottom:2px dotted var(--acc)}
 @keyframes blink{50%{box-shadow:-2px 0 0 transparent}}
 #hid{position:fixed;opacity:0;pointer-events:none;left:-999px;top:0}

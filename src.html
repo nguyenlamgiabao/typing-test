@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luyện gõ phím</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/panels.css">
+<link rel="stylesheet" href="css/souls.css">
+<style id="userCss"></style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.83-.44-1.12-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z"/></symbol>
+<symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></symbol>
+<symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+</svg>
+<div class="app">
+<h1><svg class="ic" aria-hidden="true"><use href="#i-keyboard"/></svg> Luyện gõ phím</h1>
+<div class="bar modes"><button data-mode="type" class="on">Luyện gõ</button><button data-mode="game">⚔ Typo Souls</button></div>
+<div id="typeView">
+<div class="bar">
+<button data-lang="vi" class="on">Tiếng Việt</button>
+<button data-lang="en">English</button>
+<select id="dur"><option value="15">15 giây</option><option value="30" selected>30 giây</option><option value="60">60 giây</option><option value="0">Vô hạn</option></select>
+<button id="reset"><svg class="ic" aria-hidden="true"><use href="#i-reset"/></svg> Làm mới</button>
+</div>
+<div class="dash">
+<div class="stat"><b id="t">30</b><span id="tl">giây</span></div>
+<div class="stat"><b id="wpm">0</b><span>WPM</span></div>
+<div class="stat"><b id="cpm">0</b><span>CPM</span></div>
+<div class="stat"><b id="acc">100%</b><span>chính xác</span></div>
+</div>
+<div class="box" id="box"><div id="words"></div></div>
+<input id="hid" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false" data-lpignore="true">
+<div class="hint">Bấm vào khung rồi gõ để bắt đầu. Chế độ <b>Vô hạn</b>: ô đầu là số từ đã gõ, bấm <kbd>Esc</kbd> để kết thúc và xem đánh giá. Gõ tiếng Việt kiểu nào (Telex, VNI, đặt dấu cũ/mới) đều được chấm đúng. Từ chưa có dấu <b>không bị tính sai</b> khi bạn còn đang gõ, chỉ tính sai nếu từ đã xong mà vẫn thiếu hoặc sai dấu. Làm mới nhanh: <kbd>Tab</kbd> rồi <kbd>Enter</kbd>.</div>
+<div class="res" id="res"><div class="big" id="rw"></div><div id="rd"></div><div id="rk"></div><div id="rg"></div><div id="rx"></div></div>
+</div>
+<section id="gameView" hidden>
+<div class="sg" id="sg">
+<div class="sprite sg-bg blank" id="gBg"></div>
+<div class="sg-hud"><div id="gName"></div><div class="hp"><i id="gBossHp"></i></div></div>
+<div class="sprite sg-boss blank" id="gBoss"></div>
+<div class="sprite sg-me blank" id="gMe"></div>
+<div class="hp me"><i id="gMeHp"></i></div>
+<div class="sg-msg" id="gMsg"></div>
+<div class="sg-over show" id="gOver"><div class="big" id="gOT">TYPO SOULS</div><div id="gOD">Chúa Tể Gõ Sai đang chờ bạn.</div><button id="gGo">Bắt đầu (Enter)</button></div>
+</div>
+<div class="sg-atk"><div class="sg-kind" id="gKind">Chờ boss ra đòn...</div><div class="sg-str" id="gStr"></div><div class="sg-time"><i id="gTime"></i></div></div>
+<input id="ghid" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false" data-lpignore="true" style="position:fixed;opacity:0;left:-999px;top:0;pointer-events:none">
+<div class="hint">Boss ra đòn là một chuỗi ký tự hiện ra. Gõ <b>đúng 100%</b> (phân biệt hoa/thường, ký tự đặc biệt) trước khi hết giờ. <b>Sai 1 ký tự hoặc hết giờ là mất máu</b>, không được Backspace. 🌀 Né đòn: chuỗi ngắn, đánh nhẹ. 🛡 Đỡ đòn: chuỗi dài, phản đòn cực mạnh. <b>Hãy tắt bộ gõ tiếng Việt (chuyển sang EN) khi chơi.</b> Ảnh thay trong thư mục <code>images/</code> (xem images/README.txt).</div>
+</section>
+</div>
+<div id="dock"><button id="bCss"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg> CSS</button><button id="bSnd"><svg class="ic" aria-hidden="true"><use href="#i-volume"/></svg> Âm thanh</button><button id="bMus"><svg class="ic" aria-hidden="true"><use href="#i-music"/></svg> Nhạc</button></div>
+<div class="panel" id="cssPanel">
+<b>Tuỳ chỉnh giao diện bằng CSS</b>
+<div class="m"><b>Chỉnh được hầu hết mọi thứ trong trang gõ:</b> màu (đổi biến <code>--bg --card --fg --dim --ok --bad --badbg --acc --bd</code> ở <code>:root</code>), nền trang (<code>html</code>, <code>body</code>), font, bố cục, bo góc, đổ bóng, gradient, <code>transform</code>, <code>filter</code>, <code>transition</code>, <code>@keyframes</code> (khung/chữ/con trỏ chuyển động), <code>@media</code>, <code>@supports</code>. Selector bất kỳ như <code>.box</code>, <code>.stat:nth-child(2)</code>, <code>.c.ok</code>, <code>*</code> đều dùng được.</div>
+<div class="m"><b>Không chỉnh được:</b> ô nhập ẩn, các nút/bảng CSS - Âm thanh - Nhạc. Selector luôn bị giới hạn bên trong trang gõ. Trên html/body/:root chặn <code>transform, filter, display, pointer-events...</code> (để không làm hỏng các nút nổi). Không dùng <code>url()</code>, <code>@import</code>, <code>@font-face</code>.</div>
+<div class="m"><b>Hiệu ứng mặc định</b> (không xóa được)</div><div class="row" id="fxBuilt"></div>
+<div class="m"><b>Hiệu ứng của bạn</b></div><div class="row" id="fxMine"></div>
+<textarea id="cssIn" spellcheck="false" placeholder=".box{animation:float 3s ease-in-out infinite}&#10;@keyframes float{50%{transform:translateY(-8px)}}&#10;body{background:linear-gradient(135deg,#1a1040,#0b3a4a)}"></textarea>
+<div class="row"><input id="fxName" maxlength="30" placeholder="Tên hiệu ứng mới" style="flex:1;width:auto"><button id="fxSave"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Lưu hiệu ứng</button></div>
+<div class="row"><button id="cssReset">Khôi phục mặc định</button></div>
+<div class="m" id="cssStat"></div>
+</div>
+<div class="panel" id="soundPanel">
+<b>Âm thanh</b>
+<div class="m">Mặc định tắt hết. Âm tạo trực tiếp trong trình duyệt, không tải file ngoài.</div>
+<div class="row" style="flex-direction:column">
+<label><input type="checkbox" id="sKey" style="width:auto"> Âm khi gõ đúng</label>
+<label><input type="checkbox" id="sErr" style="width:auto"> Âm khi gõ sai</label>
+<label><input type="checkbox" id="sEnd" style="width:auto"> Âm khi hoàn thành</label>
+</div>
+<div class="row"><select id="sType" style="background:#12141a;color:#e6e8ee;border:1px solid #3a3f4d;border-radius:8px;padding:6px"><option value="click">Click</option><option value="mech">Bàn phím cơ</option><option value="pop">Pop</option><option value="bell">Chuông</option></select>
+<input type="range" id="sVol" min="0" max="100" value="40" style="flex:1;width:auto"><button id="sTest">Thử</button></div>
+</div>
+<div class="panel" id="musicPanel">
+<b>Nhạc từ Spotify</b>
+<div class="m">Dán link playlist/album/bài hát lấy từ Spotify (bấm Chia sẻ rồi Sao chép liên kết). App không tự đọc được tài khoản Spotify của bạn.</div>
+<input id="spIn" placeholder="https://open.spotify.com/playlist/...">
+<div class="row"><button id="spPlay"><svg class="ic" aria-hidden="true"><use href="#i-play"/></svg> Bật nhạc</button><button id="spStop"><svg class="ic" aria-hidden="true"><use href="#i-stop"/></svg> Tắt</button><a id="spOpen" href="#" target="_blank" rel="noopener" style="display:none;align-self:center">Mở trong Spotify <svg class="ic" aria-hidden="true"><use href="#i-link"/></svg></a></div>
+<div id="spBox"></div>
+<div class="m">Đăng nhập Spotify trong trình duyệt để nghe đủ bài, nếu không chỉ nghe được bản nghe thử. Nếu khung trống, dùng nút "Mở trong Spotify".</div>
+</div>
+<script src="js/words.js"></script>
+<script src="js/typing.js"></script>
+<script src="js/css-engine.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/spotify.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/souls.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
