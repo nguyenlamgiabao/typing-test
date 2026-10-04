@@ -130,11 +130,7 @@ kbd{border:1px solid var(--bd);border-radius:4px;padding:1px 6px;font-size:.8rem
 </div>
 <div class="box" id="box"><div id="words"></div></div>
 <input id="hid" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false" data-lpignore="true">
-<<<<<<< HEAD
 <div class="hint">Bấm vào khung rồi gõ để bắt đầu. Chế độ <b>Vô hạn</b>: ô đầu là số từ đã gõ, bấm <kbd>Esc</kbd> để kết thúc và xem đánh giá. Gõ tiếng Việt kiểu nào (Telex, VNI, đặt dấu cũ/mới) đều được chấm đúng. Từ chưa có dấu <b>không bị tính sai</b> khi bạn còn đang gõ, chỉ tính sai nếu từ đã xong mà vẫn thiếu hoặc sai dấu. Làm mới nhanh: <kbd>Tab</kbd> rồi <kbd>Enter</kbd>.</div>
-=======
-<div class="hint">Bấm vào khung rồi gõ để bắt đầu. Chế độ <b>Vô hạn</b>: ô đầu là số từ đã gõ, bấm <kbd>Esc</kbd> để kết thúc và xem đánh giá. Gõ tiếng Việt kiểu nào (Telex, VNI, đặt dấu cũ/mới) đều được chấm đúng. Làm mới nhanh: <kbd>Tab</kbd> rồi <kbd>Enter</kbd>.</div>
->>>>>>> 4a333300daf767c21ec6417208c66aaa43f42945
 <div class="res" id="res"><div class="big" id="rw"></div><div id="rd"></div><div id="rk"></div><div id="rg"></div><div id="rx"></div></div>
 </div>
 <section id="gameView" hidden>
@@ -189,11 +185,7 @@ const WORDS={vi:[...new Set(`tôi bạn anh chị em ông bà cô chú cháu con
 const $=id=>document.getElementById(id);
 const hid=$('hid'),words=$('words'),box=$('box');
 let mode='type',endless=false,curW=null,lang='vi',target=[],spans=[],wid=[],W=[],started=false,ended=false,t0=0,timer=null,dur=30,
-<<<<<<< HEAD
 composing=false,compStart=0,prevLen=0,prevSt=[],prevTW=new Set(),keys=0,errN=0,lastGrow=0,ebt={},errs={},kinds={dau:0,chu:0},cum=[],okNow=0,lastV=[];
-=======
-composing=false,compStart=0,prevLen=0,prevSt=[],keys=0,errN=0,lastGrow=0,ebt={},errs={},kinds={dau:0,chu:0},cum=[],okNow=0,lastV=[];
->>>>>>> 4a333300daf767c21ec6417208c66aaa43f42945
 /* ---- phân tích ký tự tiếng Việt: chữ gốc + mũ/móc + dấu thanh ---- */
 const TONES={'\u0300':1,'\u0301':2,'\u0309':3,'\u0303':4,'\u0323':5},MODS={'\u0302':'^','\u0306':'(','\u031B':'+'},DC={};
 function dec(ch){
@@ -235,11 +227,7 @@ function build(){
  render([],[]);
 }
 function reset(){
-<<<<<<< HEAD
  clearInterval(timer);started=ended=false;prevLen=keys=errN=okNow=0;prevSt=[];prevTW=new Set();ebt={};errs={};kinds={dau:0,chu:0};cum=[];lastV=[];composing=false;
-=======
- clearInterval(timer);started=ended=false;prevLen=keys=errN=okNow=0;prevSt=[];ebt={};errs={};kinds={dau:0,chu:0};cum=[];lastV=[];composing=false;
->>>>>>> 4a333300daf767c21ec6417208c66aaa43f42945
  hid.lang=lang;dur=+$('dur').value;endless=dur===0;$('t').textContent=endless?0:dur;$('tl').textContent=endless?'từ':'giây';
  $('wpm').textContent=0;$('cpm').textContent=0;$('acc').textContent='100%';
  $('res').classList.remove('show');hid.value='';hid.disabled=false;build();if(mode==='type')hid.focus();
@@ -253,18 +241,13 @@ function judge(ch,fin){
  for(let i=0;i<L;i++){
   if(st[i]!==1||done.has(wid[i]))continue;
   const w=W[wid[i]];done.add(wid[i]);
-<<<<<<< HEAD
   if(fin?L<w.e:(L<=w.e||(composing&&w.e>=compStart)))continue;   // chỉ phán khi từ đã xong (gõ dấu cách, hoặc hết giờ khi đã gõ đủ chữ); từ gõ dở lúc hết giờ không bị phạt
-=======
-  if(!fin&&(L<=w.e||(composing&&w.e>=compStart)))continue;       // từ chưa kết thúc (chưa gõ dấu cách)
->>>>>>> 4a333300daf767c21ec6417208c66aaa43f42945
   const e=Math.min(w.e,L),same=canon(ch.slice(w.s,e).join(''))===canon(target.slice(w.s,e).join(''));
   for(let j=w.s;j<e;j++)if(st[j]===1)st[j]=same?2:0;
  }
  return st;
 }
 function account(st,ch,now){
-<<<<<<< HEAD
  // Lỗi chỉ được ghi khi một ký tự đã CHẮC CHẮN sai (st=0). Chữ chưa có dấu mà từ chưa xong thì st=1, không bị tính.
  // Sai dấu thanh trong cùng 1 từ (kể cả đặt nhầm nguyên âm) chỉ tính 1 lỗi.
  let n=0;const tw=new Set();
@@ -279,16 +262,6 @@ function account(st,ch,now){
   errs[target[i]]=(errs[target[i]]||0)+1;
  }
  prevTW=tw;prevSt=st.slice();okNow=st.filter(x=>x>0).length;return n;
-=======
- let n=0;
- for(let i=0;i<st.length;i++)if(st[i]===0&&prevSt[i]!==0&&now-(ebt[i]||-1e9)>80){
-  ebt[i]=now;errN++;n++;
-  const a=dec(ch[i]),b=dec(target[i]);
-  if(lang==='vi'&&a.b===b.b)kinds.dau++;else kinds.chu++;
-  errs[target[i]]=(errs[target[i]]||0)+1;
- }
- prevSt=st.slice();okNow=st.filter(x=>x>0).length;return n;
->>>>>>> 4a333300daf767c21ec6417208c66aaa43f42945
 }
 function render(ch,st){
  const L=ch.length;
