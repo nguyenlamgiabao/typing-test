@@ -1,0 +1,13 @@
+#dock{position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;z-index:2147483000}
+#dock button,.panel button{display:inline-flex;align-items:center;gap:6px;background:#2b2f3a;color:#e6e8ee;border:1px solid #3a3f4d;border-radius:8px;padding:6px 12px;font:13px system-ui;cursor:pointer}
+.panel{position:fixed;right:12px;bottom:calc(60px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100vw - 24px));max-height:70vh;overflow:auto;background:#1d2028;color:#e6e8ee;border:1px solid #3a3f4d;border-radius:12px;padding:12px;z-index:2147483000;display:none;font:13px/1.45 system-ui}
+.panel.show{display:block}
+.panel textarea,.panel input{width:100%;background:#12141a;color:#e6e8ee;border:1px solid #3a3f4d;border-radius:8px;padding:8px;font:12px ui-monospace,Menlo,Consolas,monospace}
+.panel textarea{height:190px;resize:vertical;margin:8px 0}
+.panel .m{color:#9aa1b2;font-size:12px;margin:6px 0}
+.panel .row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.panel iframe{width:100%;height:152px;border:0;border-radius:12px;margin-top:8px}
+.panel a{color:#7a9cff;display:inline-flex;align-items:center;gap:4px}
+.panel .fx{display:inline-flex;gap:2px}
+.panel .fx button:first-child{border-radius:8px 0 0 8px}
+.panel .fx button:last-child:not(:first-child){border-radius:0 8px 8px 0;padding:6px 8px}
