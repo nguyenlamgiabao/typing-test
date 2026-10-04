@@ -6,6 +6,7 @@
 <title>Luyện gõ phím</title>
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/panels.css">
+<link rel="stylesheet" href="css/souls.css">
 <style id="userCss"></style>
 </head>
 <body>
@@ -23,6 +24,8 @@
 </svg>
 <div class="app">
 <h1><svg class="ic" aria-hidden="true"><use href="#i-keyboard"/></svg> Luyện gõ phím</h1>
+<div class="bar modes"><button data-mode="type" class="on">Luyện gõ</button><button data-mode="game">⚔ Typo Souls</button></div>
+<div id="typeView">
 <div class="bar">
 <button data-lang="vi" class="on">Tiếng Việt</button>
 <button data-lang="en">English</button>
@@ -36,9 +39,24 @@
 <div class="stat"><b id="acc">100%</b><span>chính xác</span></div>
 </div>
 <div class="box" id="box"><div id="words"></div></div>
-<input id="hid" autocomplete="off" autocapitalize="off" spellcheck="false">
-<div class="hint">Bấm vào khung rồi gõ để bắt đầu. Chế độ <b>Vô hạn</b> không có điểm kết thúc: ô đầu hiển thị số từ đã gõ, WPM là trung bình cả phiên. Làm mới nhanh: <kbd>Tab</kbd> rồi <kbd>Enter</kbd>.</div>
-<div class="res" id="res"><div class="big" id="rw"></div><div id="rd"></div></div>
+<input id="hid" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false" data-lpignore="true">
+<div class="hint">Bấm vào khung rồi gõ để bắt đầu. Chế độ <b>Vô hạn</b>: ô đầu là số từ đã gõ, bấm <kbd>Esc</kbd> để kết thúc và xem đánh giá. Gõ tiếng Việt kiểu nào (Telex, VNI, đặt dấu cũ/mới) đều được chấm đúng. Làm mới nhanh: <kbd>Tab</kbd> rồi <kbd>Enter</kbd>.</div>
+<div class="res" id="res"><div class="big" id="rw"></div><div id="rd"></div><div id="rk"></div><div id="rg"></div><div id="rx"></div></div>
+</div>
+<section id="gameView" hidden>
+<div class="sg" id="sg">
+<div class="sprite sg-bg blank" id="gBg"></div>
+<div class="sg-hud"><div id="gName"></div><div class="hp"><i id="gBossHp"></i></div></div>
+<div class="sprite sg-boss blank" id="gBoss"></div>
+<div class="sprite sg-me blank" id="gMe"></div>
+<div class="hp me"><i id="gMeHp"></i></div>
+<div class="sg-msg" id="gMsg"></div>
+<div class="sg-over show" id="gOver"><div class="big" id="gOT">TYPO SOULS</div><div id="gOD">Chúa Tể Gõ Sai đang chờ bạn.</div><button id="gGo">Bắt đầu (Enter)</button></div>
+</div>
+<div class="sg-atk"><div class="sg-kind" id="gKind">Chờ boss ra đòn...</div><div class="sg-str" id="gStr"></div><div class="sg-time"><i id="gTime"></i></div></div>
+<input id="ghid" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false" data-lpignore="true" style="position:fixed;opacity:0;left:-999px;top:0;pointer-events:none">
+<div class="hint">Boss ra đòn là một chuỗi ký tự hiện ra. Gõ <b>đúng 100%</b> (phân biệt hoa/thường, ký tự đặc biệt) trước khi hết giờ. <b>Sai 1 ký tự hoặc hết giờ là mất máu</b>, không được Backspace. 🌀 Né đòn: chuỗi ngắn, đánh nhẹ. 🛡 Đỡ đòn: chuỗi dài, phản đòn cực mạnh. <b>Hãy tắt bộ gõ tiếng Việt (chuyển sang EN) khi chơi.</b> Ảnh thay trong thư mục <code>images/</code> (xem images/README.txt).</div>
+</section>
 </div>
 <div id="dock"><button id="bCss"><svg class="ic" aria-hidden="true"><use href="#i-palette"/></svg> CSS</button><button id="bSnd"><svg class="ic" aria-hidden="true"><use href="#i-volume"/></svg> Âm thanh</button><button id="bMus"><svg class="ic" aria-hidden="true"><use href="#i-music"/></svg> Nhạc</button></div>
 <div class="panel" id="cssPanel">
@@ -78,6 +96,7 @@
 <script src="js/spotify.js"></script>
 <script src="js/sound.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/souls.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

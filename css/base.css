@@ -30,3 +30,11 @@ h1{font-size:1.2rem;margin:0 0 16px;font-weight:600}
 .res .big{font-size:2.4rem;font-weight:700;color:var(--acc)}
 kbd{border:1px solid var(--bd);border-radius:4px;padding:1px 6px;font-size:.8rem}
 .ic{width:1.1em;height:1.1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
+#words{position:relative}
+.res .rank{margin:8px 0;font-size:1.1rem;font-weight:700}
+.res .grid{display:flex;gap:8px;margin:10px 0}
+.res .grid div{flex:1;border:1px solid var(--bd);border-radius:8px;padding:6px;font-size:.75rem;color:var(--dim)}
+.res .grid b{display:block;font-size:1.2rem;color:var(--fg)}
+.res p{margin:6px 0;font-size:.9rem;text-align:left}
+.res .rm{font-size:.7rem;color:var(--dim)}
+.modes{margin-bottom:12px}
